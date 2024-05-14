@@ -30,8 +30,9 @@ function deims_aggregate_params_entity_presave(Drupal\Core\Entity\EntityInterfac
 					if ($relationship->field_relationship_type->entity->label() == "contains") {
 												
 						$list_of_sites_in_relationship = $relationship->field_related_sites->referencedEntities();
-						
+						\Drupal::messenger()->addMessage('i consist of:', 'status');
 						if (count($list_of_sites_in_relationship) > 0) {
+							
 							foreach ($list_of_sites_in_relationship as $site_reference) {
 								
 								$site_title = $site_reference->get('title')->value;
@@ -44,7 +45,7 @@ function deims_aggregate_params_entity_presave(Drupal\Core\Entity\EntityInterfac
 								}
 					
 							}
-						} 
+						}
 					
 					}
 				
@@ -58,11 +59,12 @@ function deims_aggregate_params_entity_presave(Drupal\Core\Entity\EntityInterfac
 			if ($list_of_observed_properties_tids) {
 				
 				$observed_properties = []; 
-				foreach ($list_of_observed_properties_tids as tid) {
+				foreach ($list_of_observed_properties_tids as $tid) {
 					$observed_properties = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($tid);
 				}
 				
 				\Drupal::messenger()->addMessage(implode(" ", $list_of_observed_properties_tids), 'status');
+				\Drupal::messenger()->addMessage('i have set new observed properties', 'status');
 				$entity->field_parameters = $observed_properties;
 			}
 
