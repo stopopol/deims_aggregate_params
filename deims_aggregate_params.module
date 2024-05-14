@@ -63,12 +63,13 @@ function deims_aggregate_params_entity_presave(Drupal\Core\Entity\EntityInterfac
 				
 				$observed_properties = []; 
 				foreach ($list_of_observed_properties_tids as $tid) {
-					$observed_properties = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($tid);
+					$observed_properties[] = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($tid);
 				}
 				\Drupal::messenger()->addMessage('list of term ids', 'status');
 				\Drupal::messenger()->addMessage(implode(" ", $list_of_observed_properties_tids), 'status');
 				\Drupal::messenger()->addMessage('i have set new observed properties', 'status');
 				$entity->field_parameters = $observed_properties;
+				
 			}
 
 		}
