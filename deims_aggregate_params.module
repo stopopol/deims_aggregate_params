@@ -1,0 +1,73 @@
+<?php
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Plugin\DefaultPluginManager;
+use Drupal\node\Entity\Node;
+
+# this module uses the entity_presave() hook to run whenever a location or site is created or updated:
+# https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Entity%21entity.api.php/function/hook_entity_presave/10
+
+/**
+ * Implements hook_entity_presave().
+ */
+function deims_aggregate_params_entity_presave(Drupal\Core\Entity\EntityInterface $entity) {
+	
+	// only called when sites are saved
+	if ($entity->getEntityTypeId() == 'node' && $entity->getType() == "site" ) {
+		
+		// get list of all relationships
+		$relationships_paragraph = $entity->get('field_related_sites_paragraph');
+		
+		if (count($relationships_paragraph) > 0) {
+			
+			$list_of_observed_properties_tids = [];
+			foreach ($relationships_paragraph->referencedEntities() as $relationship) {
+				
+				if ($relationship->field_relationship_type->entity && $relationship->field_related_sites->entity) {
+					
+					\Drupal::messenger()->addMessage('i have relationships:', 'status');
+					
+					if ($relationship->field_relationship_type->entity->label() == "contains") {
+												
+						$list_of_sites_in_relationship = $relationship->field_related_sites->referencedEntities();
+						
+						if (count($list_of_sites_in_relationship) > 0) {
+							foreach ($list_of_sites_in_relationship as $site_reference) {
+								
+								$site_title = $site_reference->get('title')->value;
+								\Drupal::messenger()->addMessage($site_title, 'status');
+								
+								$observed_properties_of_current_site = $site_reference->get('field_parameters')->referencedEntities();
+								
+								foreach ($observed_properties_of_current_site as $term) {
+								   array_push($list_of_observed_properties_tids, $term->id());
+								}
+					
+							}
+						} 
+					
+					}
+				
+				}
+			
+			}
+			
+			// remove duplicates from aggregated list of term ids
+			$list_of_observed_properties_tids = array_unique($list_of_observed_properties_tids);
+			
+			if ($list_of_observed_properties_tids) {
+				
+				$observed_properties = []; 
+				foreach ($list_of_observed_properties_tids as tid) {
+					$observed_properties = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($tid);
+				}
+				
+				\Drupal::messenger()->addMessage(implode(" ", $list_of_observed_properties_tids), 'status');
+				$entity->field_parameters = $observed_properties;
+			}
+
+		}
+		
+	}
+	
+}
