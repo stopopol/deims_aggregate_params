@@ -1,0 +1,6 @@
+{
+    "name": "stopopol/deims_aggregate_params",
+    "description": "aggregates observed properties based on all subsites",
+    "type": "drupal-custom-module",
+    "homepage": "https://github.com/stopopol/deims_aggregate_params"
+}
